@@ -1,0 +1,276 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the environment"
+            },
+            "allowedValues": [
+				"prod",
+				"acceptance",
+                "test"
+			]
+        },
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "ejaSentia",
+            "metadata": {
+            "description": "Name of the virtual Network"
+            }
+        },
+        "vnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.0.0/22",
+            "metadata": {
+            "description": "Address prefix"
+            }
+        },
+        "kubeClusterSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.0.0/24",
+            "metadata": {
+            "description": "Subnet Prefix"
+            }
+        },
+        "kubePodsSubnetName": {
+            "type": "string",
+            "defaultValue": "kubePods"
+        },
+        "internalLoadBalancersSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.2.0/24",
+            "metadata": {
+            "description": "Subnet Prefix"
+            }
+        },
+        "internalLoadBalancersSubnetName": {
+            "type": "string",
+            "defaultValue": "internalLoadBalancers"
+        },
+        "kubeClusterName": {
+            "type": "string",
+            "defaultValue": "ejaSentia",
+            "metadata": {
+                "description": "The name of the Managed Cluster resource."
+            }
+        },
+        "dnsPrefix": {
+            "type": "string",
+            "defaultValue": "erikcloud",
+            "metadata": {
+                "description": "Optional DNS prefix to use with hosted Kubernetes API server FQDN."
+            }
+        },
+        "osDiskSizeGB": {
+            "defaultValue": 30,
+            "minValue": 30,
+            "maxValue": 2048,
+            "type": "int",
+            "metadata": {
+                "description": "Disk size (in GB) to provision for each of the agent pool nodes. This value ranges from 0 to 1023. Specifying 0 will apply the default disk size for that agentVMSize."
+            }
+        },
+        "agentCount": {
+            "defaultValue": 2,
+            "minValue": 1,
+            "maxValue": 50,
+            "type": "int",
+            "metadata": {
+                "description": "The number of agent nodes for the cluster. Production workloads have a recommended minimum of 3."
+            }
+        },
+        "agentVMSize": {
+            "defaultValue": "Standard_D2_v3",
+            "type": "string",
+            "metadata": {
+                "description": "The size of the Virtual Machine."
+            }
+        },
+        "existingServicePrincipalClientId": {
+            "type": "string",
+            "metadata": {
+                "description": "Client ID (used by cloudprovider)"
+            }
+        },
+        "existingServicePrincipalClientSecret": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The Service Principal Client Secret."
+            }
+        },
+        "osType": {
+            "defaultValue": "Linux",
+            "allowedValues": [
+                "Linux"
+            ],
+            "type": "string",
+            "metadata": {
+                "description": "The type of operating system."
+            }
+        },
+        "kubernetesVersion": {
+            "defaultValue": "1.20.2",
+            "type": "string",
+            "metadata": {
+                "description": "The version of Kubernetes."
+            }
+        },
+        "enableHttpApplicationRouting": {
+            "defaultValue": false,
+            "type": "bool",
+            "metadata": {
+                "description": "boolean flag to turn on and off of http application routing"
+            }
+        },
+        "networkPlugin": {
+            "allowedValues": [
+                "azure",
+                "kubenet"
+            ],
+            "defaultValue": "azure",
+            "type": "string",
+            "metadata": {
+                "description": "Network plugin used for building Kubernetes network."
+            }
+        },
+        "maxPods": {
+            "defaultValue": 30,
+            "type": "int",
+            "metadata": {
+                "description": "Maximum number of pods that can run on a node."
+            }
+        },
+        "enableRBAC": {
+            "defaultValue": true,
+            "type": "bool",
+            "metadata": {
+                "description": "boolean flag to turn on and off of RBAC"
+            }
+        },
+        "serviceCidr": {
+            "type": "string",
+            "defaultValue": "10.10.1.0/24",
+            "metadata": {
+                "description": "A CIDR notation IP range from which to assign service cluster IPs."
+            }
+        },
+        "dnsServiceIP": {
+            "type": "string",
+            "defaultValue": "10.10.1.10",
+            "metadata": {
+                "description": "Containers DNS server IP address."
+            }
+        },
+        "dockerBridgeCidr": {
+            "type": "string",
+            "defaultValue": "172.17.0.1/16",
+            "metadata": {
+                "description": "A CIDR notation IP for Docker bridge."
+            }
+        },
+        "containerRegistryName": {
+            "type": "string",
+            "defaultValue": "ejaSentia"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Default location of the resources."
+            }
+        }
+    },
+    "variables": {
+        "kubeSubnetId" : "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('kubePodsSubnetName'))]",
+        "prefixedVneName": "[concat(parameters('environment'), parameters('vnetName'))]",
+        "prefixedACRName": "[concat(parameters('environment'), parameters('containerRegistryName'))]",
+        "prefixedAKSName": "[concat(parameters('environment'), parameters('kubeClusterName'))]"
+	},
+    "resources": [
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('prefixedVneName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('kubePodsSubnetName')]",
+                        "properties": {
+                            "addressPrefix":"[parameters('kubeClusterSubnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('internalLoadBalancersSubnetName')]",
+                        "properties": {
+                            "addressPrefix":"[parameters('internalLoadBalancersSubnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('prefixedACRName')]",
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2019-12-01-preview",
+            "location": "[parameters('location')]",
+            "tags": {},
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "adminUserEnabled": false,
+                "networkRuleSet": {
+                    "defaultAction": "Allow"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters",
+            "name": "[variables('prefixedAKSName')]",
+            "apiVersion": "2020-07-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "enableRBAC": "[parameters('enableRBAC')]",
+                "dnsPrefix": "[parameters('dnsPrefix')]",
+                "addonProfiles": {
+                    "httpApplicationRouting": {
+                        "enabled": "[parameters('enableHttpApplicationRouting')]"
+                    }
+                },
+                "agentPoolProfiles": [
+                    {
+                        "name": "agentpool",
+                        "osDiskSizeGB": "[parameters('osDiskSizeGB')]",
+                        "count": "[parameters('agentCount')]",
+                        "vmSize": "[parameters('agentVMSize')]",
+                        "osType": "[parameters('osType')]",
+                        "storageProfile": "ManagedDisks",
+                        "vnetSubnetID": "[variables('kubeSubnetId')]",
+                        "maxPods": "[parameters('maxPods')]",
+                        "mode" : "System"
+                    }
+                ],
+                "servicePrincipalProfile": {
+                    "clientId": "[parameters('existingServicePrincipalClientId')]",
+                    "secret": "[parameters('existingServicePrincipalClientSecret')]"
+                },
+                "networkProfile": {
+                    "networkPlugin": "[parameters('networkPlugin')]",
+                    "serviceCidr": "[parameters('serviceCidr')]",
+                    "dnsServiceIP": "[parameters('dnsServiceIP')]",
+                    "dockerBridgeCidr": "[parameters('dockerBridgeCidr')]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
