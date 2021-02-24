@@ -13,6 +13,9 @@ jobs:
   build-and-deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    env:
+      LOCATION: westeurope
+      RESOURCE_GROUP: testEjaSentia
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -24,10 +27,17 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Azure CLI script
+      - name: Create resource group
         uses: azure/CLI@v1
         with:
           azcliversion: 2.0.72
           inlineScript: |
-            az group create -n "$GITHUB_HEAD_REF"EjaSentia -l westeurope
-            az deployment group create --name "$GITHUB_HEAD_REF"EjaSentia --resource-group "$GITHUB_HEAD_REF"EjaSentia --template-file ./arm_templates/azuredeploy.json --parameters ./azuredeploy.parameters.json --parameters environment=$GITHUB_HEAD_REF
+            az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
+      
+      - uses: whiteducksoftware/azure-arm-action@v3.2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          templateLocation: ./arm_templates/azuredeploy.json
+          parameters: ./arm_templates/azuredeploy.parameters.json
+          deploymentName: ${{ env.RESOURCE_GROUP }}
