@@ -24,8 +24,7 @@ jobs:
 
       - name: debug
         run: |
-          ls -la
-          ls -la ${GITHUB_WORKSPACE}
+          ls -la ./arm_templates/azuredeploy.json
 
       - name: Azure Login
         uses: azure/login@v1
@@ -43,6 +42,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
-          templateLocation: ${GITHUB_WORKSPACE}/arm_templates/azuredeploy.json
+          templateLocation: ./arm_templates/azuredeploy.json
           parameters: environment=test existingServicePrincipalClientId=4b6c8589-dc81-4229-af9b-cb031124e212 existingServicePrincipalClientSecret=${{ secrets.AKS_SP_SECRET }}
           deploymentName: ${{ env.RESOURCE_GROUP }}
