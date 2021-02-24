@@ -183,10 +183,10 @@
         }
     },
     "variables": {
-        "kubeSubnetId" : "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('kubePodsSubnetName'))]",
         "prefixedVneName": "[concat(parameters('environment'), parameters('vnetName'))]",
         "prefixedACRName": "[concat(parameters('environment'), parameters('containerRegistryName'))]",
-        "prefixedAKSName": "[concat(parameters('environment'), parameters('kubeClusterName'))]"
+        "prefixedAKSName": "[concat(parameters('environment'), parameters('kubeClusterName'))]",
+        "kubeSubnetId" : "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('prefixedVneName'), parameters('kubePodsSubnetName'))]"
 	},
     "resources": [
         {
@@ -219,7 +219,7 @@
         {
             "name": "[variables('prefixedACRName')]",
             "type": "Microsoft.ContainerRegistry/registries",
-            "apiVersion": "2019-12-01-preview",
+            "apiVersion": "2019-05-01",
             "location": "[parameters('location')]",
             "tags": {},
             "sku": {
