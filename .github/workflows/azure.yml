@@ -61,7 +61,6 @@ jobs:
       - name: debug
         run: |
           echo ${{ steps.ingress-prepare.outputs.KUBE_CONFIG_DATA }}
-          echo ${{ steps.ingress-prepare.outputs.KUBE_CONFIG_DATA | base64 -d }}
 
       - name: Deploy ingress controller
         uses: wahyd4/kubectl-helm-action@master
