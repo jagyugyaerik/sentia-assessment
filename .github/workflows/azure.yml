@@ -53,9 +53,13 @@ jobs:
         with:
           azcliversion: 2.0.72
           inlineScript: |
-            az network public-ip create --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --sku Standard --allocation-method static
-            echo "PUBLIC_IP_ADDRESS=$(az network public-ip show --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --query ipAddress) -o tsv" >> $GITHUB_ENV
-            echo "KUBE_CONFIG_DATA=$(az aks get-credentials --name ${{ env.AKS_CLUSTER_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --file - | base64)" >> $GITHUB_ENV
+            # az network public-ip create --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --sku Standard --allocation-method static
+            # echo "PUBLIC_IP_ADDRESS=$(az network public-ip show --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --query ipAddress) -o tsv" >> $GITHUB_ENV
+            echo "$(az aks get-credentials --name ${{ env.AKS_CLUSTER_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --file - | base64)" >> kubeconfig
+      
+      - name: Set KUBE_CONFIG_DATA
+        run:
+          echo "KUBE_CONFIG_DATA=$(cat kubeconfig | base64)" >> $GITHUB_ENV
 
       - name: Deploy ingress controller
         uses: wahyd4/kubectl-helm-action@master
