@@ -16,7 +16,7 @@ jobs:
     env:
       LOCATION: westeurope
       RESOURCE_GROUP: testEjaSentia
-      AKS_CLUSTER_NAME: testejaSentia
+      AKS_CLUSTER_NAME: testEjaSentia
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
