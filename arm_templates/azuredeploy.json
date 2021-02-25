@@ -226,10 +226,7 @@
                 "name": "Standard"
             },
             "properties": {
-                "adminUserEnabled": false,
-                "networkRuleSet": {
-                    "defaultAction": "Allow"
-                }
+                "adminUserEnabled": false
             }
         },
         {
