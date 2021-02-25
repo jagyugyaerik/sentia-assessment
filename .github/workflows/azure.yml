@@ -17,6 +17,7 @@ jobs:
       LOCATION: westeurope
       RESOURCE_GROUP: testEjaSentia
       AKS_CLUSTER_NAME: testEjaSentia
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -51,4 +52,4 @@ jobs:
         with:
           azcliversion: 2.0.72
           inlineScript: |
-            echo "$(az network public-ip create --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --name testPublicIp --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv)" >> $PUBLIC_IP_ADDRESS
+            az network public-ip create --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --name testPublicIp --sku Standard --allocation-method static
