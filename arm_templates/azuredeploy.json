@@ -185,7 +185,6 @@
     "variables": {
         "prefixedVneName": "[concat(parameters('environment'), parameters('vnetName'))]",
         "prefixedACRName": "[concat(parameters('environment'), parameters('containerRegistryName'))]",
-        "prefixedAKSName": "[concat(parameters('environment'), parameters('kubeClusterName'))]",
         "kubeSubnetId" : "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('prefixedVneName'), parameters('kubePodsSubnetName'))]"
 	},
     "resources": [
@@ -231,7 +230,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "name": "[variables('prefixedAKSName')]",
+            "name": "[parameters('kubeClusterName')]",
             "apiVersion": "2020-07-01",
             "location": "[parameters('location')]",
             "properties": {
