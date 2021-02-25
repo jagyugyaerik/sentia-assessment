@@ -31,12 +31,12 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-#       - name: Create resource group
-#         uses: azure/CLI@v1
-#         with:
-#           azcliversion: 2.0.72
-#           inlineScript: |
-#             az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
+      - name: Create resource group
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: |
+            az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
       
       - uses: azure/arm-deploy@v1
         with:
