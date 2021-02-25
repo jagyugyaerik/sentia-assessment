@@ -41,5 +41,5 @@ jobs:
           azcliversion: 2.0.72
           inlineScript: |
             az acr login --name ${{ env.ACT_NAME }}
-            docker build -t ${{ env.ACR_NAME }}.azurecr.io/star-wars-quote:latest
+            docker build -t ${{ env.ACR_NAME }}.azurecr.io/star-wars-quote:latest -f apps/star-wars-quotes/Dockerfile apps/star-wars-quotes/
             docker push ${{ env.ACR_NAME }}.azurecr.io/star-wars-quote:latest
