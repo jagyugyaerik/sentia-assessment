@@ -1,0 +1,43 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Deploy Apps
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build-and-deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      LOCATION: westeurope
+      RESOURCE_GROUP: testEjaSentia
+      ACR_NAME: testEjaSentia
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: docker-practice/actions-setup-docker@master
+
+      - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.4.0'
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create resource group
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: |
+            az acr login --name ${{ env.ACT_NAME }}
+            docker build -t ${{ env.ACR_NAME }}.azurecr.io/star-wars-quote:latest
+            docker push ${{ env.ACR_NAME }}.azurecr.io/star-wars-quote:latest
