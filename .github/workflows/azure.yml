@@ -24,10 +24,15 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - uses: docker-practice/actions-setup-docker@master
+      
+      - uses: azure/setup-kubectl@v1
+        with:
+          version: 'v1.18.8'
 
-      - name: debug
-        run: |
-          ls -la ./arm_templates/azuredeploy.json
+      - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.4.0'
 
       - name: Azure Login
         uses: azure/login@v1
@@ -48,22 +53,14 @@ jobs:
       #     template: ./arm_templates/azuredeploy.json
       #     parameters: environment=test kubeClusterName=${{ env.AKS_CLUSTER_NAME }} testejaSentiaexistingServicePrincipalClientId=4b6c8589-dc81-4229-af9b-cb031124e212 existingServicePrincipalClientSecret=${{ secrets.AKS_SP_SECRET }}
 
-      - name: Prepare ingress controller deployment
-        id: ingress-prepare
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.0.72
-          inlineScript: |
-            # az network public-ip create --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --sku Standard --allocation-method static
-            # echo "PUBLIC_IP_ADDRESS=$(az network public-ip show --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --query ipAddress) -o tsv" >> $GITHUB_ENV
-      
-      - uses: azure/setup-kubectl@v1
-        with:
-          version: 'v1.18.8'
-
-      - uses: azure/setup-helm@v1
-        with:
-          version: 'v3.4.0'
+      # - name: Prepare ingress controller deployment
+      #   id: ingress-prepare
+      #   uses: azure/CLI@v1
+      #   with:
+      #     azcliversion: 2.0.72
+      #     inlineScript: |
+      #       # az network public-ip create --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --sku Standard --allocation-method static
+      #       # echo "PUBLIC_IP_ADDRESS=$(az network public-ip show --name ${{ env.IP_ADDRESS_RESOURCE_NAME }} --resource-group MC_${{ env.RESOURCE_GROUP }}_${{ env.AKS_CLUSTER_NAME }}_${{ env.LOCATION }} --query ipAddress) -o tsv" >> $GITHUB_ENV
  
       - uses: azure/aks-set-context@v1
         with:
@@ -71,35 +68,47 @@ jobs:
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}
           resource-group: ${{ env.RESOURCE_GROUP }}
 
-      - name: kubectl
-        run: kubectl create ns nginx-ingress
+      # - name: kubectl
+      #   run: kubectl create ns nginx-ingress
 
-      - name: helm
-        run: |
-          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-          helm repo add jetstack https://charts.jetstack.io
-          helm repo update
-          helm install nginx-ingress ingress-nginx/ingress-nginx \
-              --namespace nginx-ingress \
-              --set controller.replicaCount=2 \
-              --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
-              --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux \
-              --set controller.admissionWebhooks.patch.nodeSelector."beta\.kubernetes\.io/os"=linux \
-              --set controller.service.loadBalancerIP=${PUBLIC_IP_ADDRESS} \
-              --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"="sentia"
+      # - name: helm
+      #   run: |
+      #     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+      #     helm repo add jetstack https://charts.jetstack.io
+      #     helm repo update
+      #     helm install nginx-ingress ingress-nginx/ingress-nginx \
+      #         --namespace nginx-ingress \
+      #         --set controller.replicaCount=2 \
+      #         --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux \
+      #         --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux \
+      #         --set controller.admissionWebhooks.patch.nodeSelector."beta\.kubernetes\.io/os"=linux \
+      #         --set controller.service.loadBalancerIP=${PUBLIC_IP_ADDRESS} \
+      #         --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"="sentia"
 
-      - name: kubectl
-        run: kubectl label namespace nginx-ingress cert-manager.io/disable-validation=true
+      # - name: kubectl
+      #   run: kubectl label namespace nginx-ingress cert-manager.io/disable-validation=true
 
-      - name: helm
-        run: |
-          helm install \
-            cert-manager \
-            --namespace nginx-ingress \
-            --version v0.16.1 \
-            --set installCRDs=true \
-            --set nodeSelector."beta\.kubernetes\.io/os"=linux \
-            jetstack/cert-manager
+      # - name: helm
+      #   run: |
+      #     helm install \
+      #       cert-manager \
+      #       --namespace nginx-ingress \
+      #       --version v0.16.1 \
+      #       --set installCRDs=true \
+      #       --set nodeSelector."beta\.kubernetes\.io/os"=linux \
+      #       jetstack/cert-manager
       
-      - name: kubectl
-        run: kubectl apply -f ./k8s/cluster-issuer.yaml
+      # - name: kubectl
+      #   run: |
+      #     sleep 30
+      #     kubectl apply -f ./k8s/cluster-issuer.yaml
+
+      - name: ACR
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: |
+            az aks update -n {{ env.AKS_CLUSTER_NAME }} -g {{ env.RESOURCE_GROUP }} --attach-acr {{ env.RESOURCE_GROUP }}
+            az acr login --name testEjaSentia
+            docker build -t {{ env.RESOURCE_GROUP }}.azurecr.io/star-wars-quote:latest -f apps/star-wars-quotes/Dockerfile apps/star-wars-quotes/
+            docker push {{ env.RESOURCE_GROUP }}.azurecr.io/star-wars-quote:latest
