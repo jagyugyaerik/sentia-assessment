@@ -49,6 +49,10 @@ The next section summarizes which solutions could have been chosen for the migra
 
 *Reason*: As we will have a AKS cluster I think we can relay on the azure resource manager to deploy the app gateway automaticaly. If this not secure enough we can change the solution.
 
+## Designed architecture
+The image shows the planned architecture:
+![architecutire](arch.png)
+
 ## Deploy the solution
 Steps of the installation:
 
