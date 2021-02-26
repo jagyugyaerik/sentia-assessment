@@ -81,3 +81,8 @@ az login
 ## Repo information
 - apps: You can find the applications here.
   - star-wars-quotes: This is the main application which is a containerized nodejs express project with mongo access.
+- arm_templates: Contain the infrastructure templates for azure provision
+- charts: Helm of the charts of the application
+  - star-wars-quotes: the main application's helm chart
+  - sftp: Sftp server's helm chart
+- k8s: Contains the necsessary assets of the nginx-ingress controller
