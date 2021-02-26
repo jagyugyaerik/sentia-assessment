@@ -1,5 +1,5 @@
 # ENV=$(git branch --show-current)
-ENV=$(git branch --show-current)
+ENV=prod
 ACR_NAME="$ENV"ejasentia
 RESOURCE_GROUP="$ENV"EjaSentia
 AKS_CLUSTER_NAME="$ENV"EjaSentia

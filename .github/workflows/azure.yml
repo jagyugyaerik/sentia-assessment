@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LOCATION: westeurope
-      ENV: acceptance
-      RESOURCE_GROUP: acceptanceEjaSentia
-      AKS_CLUSTER_NAME: acceptanceEjaSentia
+      ENV: prod
+      RESOURCE_GROUP: prodEjaSentia
+      AKS_CLUSTER_NAME: prodEjaSentia
       ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      IP_ADDRESS_RESOURCE_NAME: acceptancePublicIp
+      IP_ADDRESS_RESOURCE_NAME: prodPublicIp
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
