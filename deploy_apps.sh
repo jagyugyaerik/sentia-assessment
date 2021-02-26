@@ -4,10 +4,10 @@ ACR_NAME="$ENV"ejasentia
 RESOURCE_GROUP="$ENV"EjaSentia
 AKS_CLUSTER_NAME="$ENV"EjaSentia
 
-# az acr login --name $ACR_NAME
-# az aks get-credentials -n $AKS_CLUSTER_NAME -g $RESOURCE_GROUP
-# az aks update -n $AKS_CLUSTER_NAME -g $RESOURCE_GROUP --attach-acr $ACR_NAME
-# az acr build -t star-wars-quotes:latest -r $ACR_NAME -f apps/star-wars-quotes/Dockerfile apps/star-wars-quotes
+az acr login --name $ACR_NAME
+az aks get-credentials -n $AKS_CLUSTER_NAME -g $RESOURCE_GROUP
+az aks update -n $AKS_CLUSTER_NAME -g $RESOURCE_GROUP --attach-acr $ACR_NAME
+az acr build -t star-wars-quotes:latest -r $ACR_NAME -f apps/star-wars-quotes/Dockerfile apps/star-wars-quotes
 
 kubectl create ns star-wars-quotes
 helm install star-wars-quotes charts/star-wars-quotes \
