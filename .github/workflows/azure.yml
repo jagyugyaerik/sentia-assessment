@@ -51,7 +51,7 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: ./arm_templates/azuredeploy.json
-          parameters: environment=${{ env.ENV }} kubeClusterName=${{ env.AKS_CLUSTER_NAME }} existingServicePrincipalClientId=4b6c8589-dc81-4229-af9b-cb031124e212 existingServicePrincipalClientSecret=${{ secrets.AKS_SP_SECRET }}
+          parameters: environment=${{ env.ENV }} kubeClusterName=${{ env.AKS_CLUSTER_NAME }} existingServicePrincipalClientId=${{ secrets.AKS_SP_ID }} existingServicePrincipalClientSecret=${{ secrets.AKS_SP_SECRET }}
 
       - name: Create public ip address
         id: ingress-prepare
